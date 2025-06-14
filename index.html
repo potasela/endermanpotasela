@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RefisPlay</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #1e1e2f;
+    color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header {
+    background-color: #292947;
+    width: 100%;
+    padding: 1em;
+    text-align: center;
+    font-size: 1.5em;
+  }
+  main {
+    padding: 1em;
+    max-width: 600px;
+    width: 100%;
+  }
+  .hidden {
+    display: none;
+  }
+  .game-button, .action-button {
+    background: #4a4aff;
+    border: none;
+    padding: 10px;
+    margin: 10px 0;
+    width: 100%;
+    border-radius: 6px;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+  }
+  .game-button:hover, .action-button:hover {
+    background: #3232ff;
+  }
+  input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    border-radius: 4px;
+    border: none;
+    font-size: 1em;
+  }
+  iframe {
+    width: 100%;
+    height: 300px;
+    border: none;
+    border-radius: 8px;
+    background: white;
+  }
+</style>
+</head>
+<body>
+  <header>RefisPlay</header>  <main>
+    <div id="login">
+      <h2>Login</h2>
+      <input type="text" id="username" placeholder="Enter username">
+      <button class="action-button" onclick="login()">Login</button>
+    </div><div id="home" class="hidden">
+  <h2>Welcome, <span id="userDisplay"></span></h2>
+  <button class="action-button" onclick="openStudio()">Open Studio</button>
+  <div id="games"></div>
+  <button class="action-button" onclick="logout()">Logout</button>
+</div>
+
+<div id="studio" class="hidden">
+  <h2>Studio</h2>
+  <select id="slot">
+    <option value="0">Slot 1</option>
+    <option value="1">Slot 2</option>
+    <option value="2">Slot 3</option>
+    <option value="3">Slot 4</option>
+    <option value="4">Slot 5</option>
+    <option value="5">Slot 6</option>
+    <option value="6">Slot 7</option>
+    <option value="7">Slot 8</option>
+    <option value="8">Slot 9</option>
+    <option value="9">Slot 10</option>
+  </select>
+  <input type="text" id="gameName" placeholder="Enter game name">
+  <textarea id="gameCode" rows="10" placeholder="Write game HTML here..."></textarea>
+  <button class="action-button" onclick="previewGame()">Preview</button>
+  <button class="action-button" onclick="saveGame()">Publish</button>
+  <button class="action-button" onclick="goHome()">Back to Home</button>
+  <iframe id="gamePreview"></iframe>
+</div>
+
+  </main><script>
+let currentUser = "";
+let games = Array(10).fill(null);
+
+function login() {
+  const usernameInput = document.getElementById("username");
+  const username = usernameInput.value.trim();
+  if (!username) {
+    alert("Please enter a username.");
+    return;
+  }
+  currentUser = username;
+  document.getElementById("login").style.display = "none";
+  document.getElementById("home").style.display = "block";
+  document.getElementById("userDisplay").textContent = username;
+  loadGames();
+  updateGames();
+}
+
+function logout() {
+  currentUser = "";
+  document.getElementById("login").style.display = "block";
+  document.getElementById("home").style.display = "none";
+  document.getElementById("studio").style.display = "none";
+  document.getElementById("username").value = "";
+}
+
+function openStudio() {
+  document.getElementById("home").style.display = "none";
+  document.getElementById("studio").style.display = "block";
+  document.getElementById("gameCode").value = "";
+  document.getElementById("gameName").value = "";
+  document.getElementById("gamePreview").srcdoc = "";
+}
+
+function goHome() {
+  document.getElementById("studio").style.display = "none";
+  document.getElementById("home").style.display = "block";
+  updateGames();
+}
+
+function previewGame() {
+  const code = document.getElementById("gameCode").value;
+  document.getElementById("gamePreview").srcdoc = code;
+}
+
+function saveGame() {
+  const index = parseInt(document.getElementById("slot").value);
+  const name = document.getElementById("gameName").value.trim() || `Game Slot ${index+1}`;
+  const code = document.getElementById("gameCode").value;
+  games[index] = { name, code };
+  localStorage.setItem("refisplay_" + currentUser, JSON.stringify(games));
+  alert("Game published!");
+  updateGames();
+}
+
+function updateGames() {
+  const container = document.getElementById("games");
+  container.innerHTML = "";
+  for (let i = 0; i < games.length; i++) {
+    const btn = document.createElement("button");
+    btn.className = "game-button";
+    const game = games[i];
+    btn.textContent = game && game.name ? game.name : `Game Slot ${i+1}`;
+    btn.onclick = () => playGame(i);
+    container.appendChild(btn);
+  }
+}
+
+function playGame(index) {
+  const game = games[index];
+  if (!game || !game.code) return alert("No game published in this slot.");
+  const win = window.open();
+  if (win) {
+    win.document.write(game.code);
+    win.document.close();
+  } else {
+    alert("Pop-up blocked. Please allow pop-ups to play the game.");
+  }
+}
+
+function loadGames() {
+  const data = localStorage.getItem("refisplay_" + currentUser);
+  if (data) games = JSON.parse(data);
+}
+</script></body>
+</html>
