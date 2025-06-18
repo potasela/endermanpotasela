@@ -1,0 +1,18 @@
+h1 {
+    color: brown; 
+    font-size: 60px;
+}    
+#refisplay-titlu {
+  color: brown;
+  text-align: center;
+}
+p {
+    font-size: 20px;
+}
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(to bottom, #3399ff, #9933ff);
+  font-family: Arial, sans-serif;
+  color: white;
+}
